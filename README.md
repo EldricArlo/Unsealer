@@ -29,23 +29,47 @@
 
 ---
 
+## How to Get Your `.spass` File
+
+The `.spass` backup file is typically created using Samsung's **Smart Switch** application on your PC or Mac.
+
+1.  **Connect Your Phone**: Connect your Samsung phone to your computer via a USB cable.
+2.  **Open Smart Switch**: Launch the Smart Switch application on your computer.
+3.  **Perform a Backup**:
+    *   Click on the "Backup" option.
+    *   You may be prompted to select which items to back up. Ensure that **"Settings"** or a similar category containing passwords is selected.
+    *   Let the backup process complete.
+4.  **Locate the File**:
+    *   After the backup is finished, navigate to the Smart Switch backup folder on your computer.
+    *   Inside the backup folder, look for a path similar to `\SAMSUNG\PASS\backup\`.
+    *   You should find your backup file there, usually named with a timestamp, e.g., `20250913_103000.spass`.
+
+This is the file you will use with Unsealer.
+
+---
+
 ## Installation
 
-You need **Python 3.7+** and **Git** installed on your system to install this tool directly from its GitHub repository.
+You need **Python 3.7+** installed on your system.
 
-Open your terminal or command prompt and run the following command:
+### 1. Recommended Method (via PyPI)
+
+This is the simplest and most direct way. Open your terminal or command prompt and run:
+
+```bash
+pip install unsealer-samsung
+```
+
+> [!TIP]
+> If the `pip` command is not found, try using `pip3` instead: `pip3 install unsealer-samsung`
+
+### 2. Alternative Method (Latest Version from GitHub)
+
+If you want to install the absolute latest (potentially unstable) version directly from the source code, you will also need **Git**.
 
 ```bash
 pip install git+https://github.com/EldricArlo/Unsealer.git
 ```
-
-This command will:
-1.  Download the source code from GitHub.
-2.  Automatically install the required `pycryptodome` library.
-3.  Add the `unsealer` command to your system's PATH, making it available everywhere.
-
-> [!TIP]
-> If the `pip` command is not found, try using `pip3` instead: `pip3 install git+...`
 
 ---
 
@@ -97,6 +121,35 @@ This exports the data into a clean, readable Markdown table named `report.md`.
 ```bash
 unsealer ./my_samsung_data.spass "MyP@ssw0rd!123" --format md --output report.md
 ```
+
+---
+
+## FAQ (Frequently Asked Questions)
+
+**Q: I'm getting a "decryption or parsing failed" error. What's wrong?**
+A: This error almost always means one of two things:
+   1.  **Incorrect Password**: You might have mistyped your Samsung account master password. Passwords are case-sensitive. Please double-check it.
+   2.  **Corrupted File**: The `.spass` file itself might be corrupted or incomplete. Try creating a new backup from your phone.
+
+**Q: Is this tool safe? Can it steal my passwords?**
+A: This tool is designed with security as a top priority.
+   - It runs **100% offline**. It does not and cannot send any of your data over the internet.
+   - It is **open source**, meaning anyone can inspect the code (`decrypter.py`) to verify that it only performs local decryption.
+
+**Q: Will this tool work with future versions of Samsung Pass?**
+A: **Maybe not.** This tool is based on the file format used by Samsung as of the time of its development. If Samsung decides to change its encryption method in a future update, this tool may stop working until it is updated by the community.
+
+---
+
+## How It Works (Technical Details)
+
+For those interested in the technical specifics, the decryption process follows these key steps, based on the reverse engineering of the `.spass` format:
+
+1.  **Base64 Decode**: The entire `.spass` file is a Base64 encoded string. The first step is to decode it into raw binary data.
+2.  **Extract Components**: The binary data is split into three parts: a 20-byte **salt**, a 16-byte **initialization vector (IV)**, and the remaining **encrypted data**.
+3.  **Derive Key**: Your master password is not the direct key. Instead, the tool uses the **PBKDF2-SHA256** algorithm. It combines your password with the salt and performs 70,000 rounds of hashing to derive a secure 256-bit (32-byte) AES key. This makes brute-force attacks extremely difficult.
+4.  **AES Decrypt**: The derived key and IV are used to decrypt the data using the **AES-256-CBC** cipher.
+5.  **Parse Data**: The decrypted content is a large text block. The tool parses this block, finds the login credentials table, and decodes each field (which is also Base64 encoded) to retrieve your final data.
 
 ---
 
