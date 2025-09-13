@@ -3,6 +3,7 @@
 [![PyPI Version](https://img.shields.io/badge/pypi-v0.1.0-blue)](https://pypi.org/project/unsealer-samsung/)
 [![Python Versions](https://img.shields.io/badge/python-3.7+-brightgreen.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Telegram](https://img.shields.io/badge/Telegram-%235AA9E6?logo=telegram&labelColor=FFFFFF)](https://t.me/+dHEs5v_mLfNjYjk0)
 
 **Unsealer (Samsung)** is a simple, open-source command-line tool to decrypt Samsung Pass (`.spass`) backup files. It allows you to securely export your stored credentials into human-readable formats like CSV, TXT, or Markdown, giving you control over your own data.
 
