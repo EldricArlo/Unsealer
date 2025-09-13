@@ -1,0 +1,46 @@
+# pyproject.toml
+
+# [build-system] 部分定义了构建项目所需的工具。
+# 这是现代Python项目的标准配置，通常不需要修改。
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+# [project] 部分包含了项目的所有核心元数据。
+# 当您将项目发布到PyPI或通过pip从GitHub安装时，这些信息会被使用。
+[project]
+# 项目的官方名称，pip会使用这个名字来安装。
+name = "unsealer-samsung"
+# 项目的当前版本号。
+version = "0.1.0"
+# 项目作者信息。
+authors = [
+  { name="EldricArlo", email="eldric520lol@gmail.com" },
+]
+# 项目的一句话简介。
+description = "Unsealer (Samsung): A command-line tool to decrypt Samsung Pass (.spass) backup files."
+# 指定一个详细描述文件（通常是README.md）。
+readme = "README.md"
+# 指定项目兼容的Python版本。
+requires-python = ">=3.7"
+# 项目的分类标签，有助于在PyPI等平台上被搜索和归类。
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Utilities",
+]
+# 项目运行所必需的第三方库列表。
+# pip在安装您的项目时，会自动安装这些依赖。
+dependencies = [
+    "pycryptodome>=3.15.0",
+]
+
+# [project.scripts] 是这个项目能成为命令行工具的关键所在。
+# 它告诉pip在安装时，要创建一个可执行的命令。
+[project.scripts]
+# 这行代码的含义是：
+# 创建一个名为 "unsealer" 的命令行命令。
+# 当用户在终端执行 "unsealer" 时，实际是去运行 "unsealer_samsung" 包中 "cli.py" 文件里的 "main" 函数。
+unsealer = "unsealer_samsung.cli:main"
