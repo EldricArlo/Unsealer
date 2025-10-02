@@ -48,7 +48,7 @@ def clean_android_url(url: str) -> str:
         return ""
 
     # 策略1: 如果URL看起来已经是一个标准的域名 (例如 a.com, b.co.uk)，则直接返回。
-    # 使用正则表达式查找一个点后面跟着至少两个字母的模式。
+    # 该正则用于快速判断字符串是否包含类似 "domain.com" 的结构，从而避免对标准URL进行不必要的处理。
     if re.search(r"\.[a-zA-Z]{2,}", url):
         return url
 
@@ -111,7 +111,10 @@ def parse_decrypted_content(decrypted_content: str) -> List[Dict[str, Any]]:
     blocks = decrypted_content.split("next_table")
     login_data_block = None
     
-    # 登录凭证块有一个非常独特的表头，我们可以用它来识别。
+    # [!] 重要说明 (Important Note):
+    # 以下的解析逻辑基于当前逆向工程得到的 .spass 文件格式。
+    # 它假设登录凭证数据块总是以一个特定的、以分号分隔的表头开始。
+    # 如果未来三星更新了其备份格式，这部分代码是最有可能需要调整的地方。
     expected_header_start = "_id;origin_url;action_url;"
     for block in blocks:
         # 清理每个块前后的空白字符。
@@ -122,7 +125,7 @@ def parse_decrypted_content(decrypted_content: str) -> List[Dict[str, Any]]:
 
     # 如果遍历完所有块都没有找到登录数据，则抛出错误。
     if not login_data_block:
-        raise ValueError("在解密内容中未找到有效的登录数据块。")
+        raise ValueError("在解密内容中未找到有效的登录数据块。文件可能已损坏或格式未知。")
 
     # 2. 将找到的数据块当作一个CSV文件来处理。
     # 使用 io.StringIO 将字符串模拟成一个内存中的文本文件，以便csv模块可以读取。
