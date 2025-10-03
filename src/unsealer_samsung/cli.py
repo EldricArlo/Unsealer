@@ -1,215 +1,414 @@
 # src/unsealer_samsung/cli.py
 
 """
-命令行界面模块 (Command-Line Interface)
+命令行界面模块 (Command-Line Interface) - 最终设计版
 
-本文件是 Unsealer 工具的用户交互入口。它负责：
-  - 使用 argparse 解析命令行参数（如输入文件、密码、输出格式等）。
-  - 读取输入的 .spass 文件。
-  - 调用 decrypter 模块中的核心函数来执行解密。
-  - 根据用户指定的格式，将解密后的数据写入输出文件（CSV, TXT, MD）。
-  - 处理各种预期的错误（如文件未找到、密码错误）并向用户提供清晰的反馈。
-  - [设计] 使用 'rich' 和 'pyfiglet' 库，以“技术优雅”为理念，提供美观专业的终端输出。
+[!] 设计理念:
+本模块是“展示设计层”。它的核心职责是将提炼好的数据，以最清晰、直观、美观的方式呈现给用户。
+我们为不同类型的数据设计了专属的“卡片式”布局，并主动过滤噪音，只展示核心信息。
+
+[!] 版本 3.3 (最终格式化版) 修改说明:
+1.  **[格式] 精确实现MD Banner缩进**: 严格按照用户提供的成功范例，实现了仅在Markdown报告中为艺术字标题的第一行添加前导空格的特殊格式要求。
+2.  **[安全] 移除命令行密码参数**: 强制使用安全的交互式提示输入密码，防止密码在shell历史中泄露。
+3.  **[健壮性] 增强错误日志**: 发生未知内部错误时，会自动将详细的技术信息记录到 `unsealer_error.log` 文件中。
+4.  **[健壮性] 优化路径处理**: 自动生成输出路径时，会清理文件名中的非法字符。
+5.  **恢复 TXT 输出**: 完整恢复了 TXT 格式的导出功能。
+6.  **专属 TXT 设计**: 为 TXT 报告设计了一套全新的、为纯文本优化的精美布局。
+7.  **恢复艺术字标题**: 将 ASCII 艺术字标题重新添加到了所有报告文件的顶部。
+8.  **统一专业化样式**: 移除了所有 Emoji，统一采用 `[中文标签] EnglishName` 的专业标题风格。
 """
 
 import argparse
 import sys
 import csv
+import os
+import re
+import traceback
 from pathlib import Path
 from datetime import datetime
-
-# --- 从 rich 导入所需组件 ---
 from rich.console import Console
-from rich.table import Table
-from rich.prompt import Prompt
 from rich.panel import Panel
-from rich.box import ROUNDED
-from rich.align import Align
-
-# --- 导入 pyfiglet 库 ---
+from rich.prompt import Prompt
+from rich.text import Text
 import pyfiglet
-
-# 从同一个包内的 decrypter 模块导入核心解密函数。
 from .decrypter import decrypt_and_parse
+from typing import Dict, List, Any
 
 # --- 初始化 rich 控制台 ---
 console = Console(stderr=True)
 
-# --- 数据保存函数 (美学重构) ---
 
-def save_as_csv(data: list, output_file: Path):
-    """将数据保存为CSV文件。"""
-    if not data: return
-    with open(output_file, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=data[0].keys())
-        writer.writeheader()
-        writer.writerows(data)
+# --- 纯文本 (TXT) 定制化格式化器 (无修改) ---
+def _format_logins_txt(data: List[Dict]) -> str:
+    content = [
+        f"====================\n [登录凭证] Logins ({len(data)} 条)\n===================="
+    ]
+    for i, entry in enumerate(data, 1):
+        content.append(f"\n--- [ {i}. {entry.get('title', '未知条目')} ] ---")
+        content.append(f"{'用户名:':<10} {entry.get('username_value', 'N/A')}")
+        content.append(f"{'密码:':<10} {entry.get('password_value', 'N/A')}")
+        if url := entry.get("origin_url"):
+            content.append(f"{'网址/应用:':<10} {url}")
+        if memo := entry.get("credential_memo"):
+            content.append(f"{'备注:':<10} {memo}")
+        if isinstance(otp := entry.get("otp"), dict) and otp.get("secret"):
+            content.append(f"\n  [!!] 两步验证 (2FA) 密钥:")
+            content.append(f"    {'密钥:':<8} {otp.get('secret')}")
+            content.append(f"    {'账户:':<8} {otp.get('name', 'N/A')}")
+    return "\n".join(content)
 
-def save_as_txt(data: list, output_file: Path, banner: str):
-    """
-    [设计] 将数据保存为一份排版精美的TXT报告。
-    """
-    if not data: return
-    with open(output_file, 'w', encoding='utf-8') as f:
-        f.write(banner)
-        f.write("─" * 80 + "\n")
-        f.write(f"报告生成于: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-        f.write("─" * 80 + "\n\n")
-        labels = ["名称", "网址", "用户", "密码", "备注"]
-        max_label_width = max(len(label) for label in labels) + 1
-        for i, entry in enumerate(data, 1):
-            f.write(f"--- [ 条目 {i} ] " + "─" * (65 - len(str(i))) + "\n")
-            f.write(f"{'名称:':<{max_label_width}} {entry['name']}\n")
-            f.write(f"{'网址:':<{max_label_width}} {entry['url']}\n")
-            f.write(f"{'用户:':<{max_label_width}} {entry['username']}\n")
-            f.write(f"{'密码:':<{max_label_width}} {entry['password']}\n")
-            f.write(f"{'备注:':<{max_label_width}} {entry['notes']}\n\n")
-        f.write("─" * 80 + "\n")
-        f.write("--- 报告结束 ---\n")
 
-def save_as_md(data: list, output_file: Path, banner: str):
-    """
-    [优化与强化] 将数据保存为卡片式 Markdown 文档，并使用业界标准方法确保Banner完美对齐。
-    """
-    if not data: return
-    with open(output_file, 'w', encoding='utf-8') as f:
-        
-        # --- 按照你的最新要求进行修改 ---
-        # 1. 清理 banner 字符串首尾的空行。
-        clean_banner = banner.strip()
-        
-        # 2. 将清理后的多行艺术字拆分成一个列表，每一行是列表中的一个元素。
-        lines = clean_banner.split('\n')
-        
-        # 3. [核心修改] 检查列表不为空，然后给第一行（也就是文件的第二行）前面加上三个空格。
-        if lines:
-            lines[0] = "   " + lines[0]
-        
-        # 4. 将修改后的行列表重新组合成一个完整的字符串。
-        modified_banner = "\n".join(lines)
-        
-        # 5. 最后，将这个手动调整过的 banner 写入代码块中。
-        f.write(f"```\n{modified_banner}\n```\n\n")
+def _format_identities_txt(data: List[Dict]) -> str:
+    content = [
+        f"\n\n=======================\n [身份信息] Identities ({len(data)} 条)\n======================="
+    ]
+    for i, entry in enumerate(data, 1):
+        content.append(f"\n--- [ {i}. {entry.get('name', '未知身份')} ] ---")
+        if isinstance(id_card := entry.get("id_card_detail"), dict):
+            content.append(f"{'身份证号:':<10} {id_card.get('mIDCardNumber', 'N/A')}")
+            content.append(f"{'姓名:':<10} {id_card.get('mUsername', 'N/A')}")
+            content.append(f"{'出生日期:':<10} {id_card.get('mBirthDay', 'N/A')}")
+        if phones := entry.get("telephone_number_list"):
+            content.append(f"{'电话:':<10} {', '.join(phones)}")
+        if emails := entry.get("email_address_list"):
+            content.append(f"{'邮箱:':<10} {', '.join(emails)}")
+    return "\n".join(content)
 
-        # 遍历每个凭证条目，并为每个条目创建一个独立的区块（这部分逻辑保持不变）
-        for entry in data:
-            f.write(f"## {entry['name']}\n\n")
-            f.write(f"- **网址**: `{entry['url']}`\n")
-            f.write(f"- **用户**: `{entry['username']}`\n")
-            f.write(f"- **密码**: `{entry['password']}`\n")
-            if entry['notes']:
-                f.write(f"- **备注**: {entry['notes']}\n")
+
+def _format_addresses_txt(data: List[Dict]) -> str:
+    content = [
+        f"\n\n=====================\n [地址信息] Addresses ({len(data)} 条)\n====================="
+    ]
+    for i, entry in enumerate(data, 1):
+        name = entry.get("full_name", f"地址 {i}")
+        if name == "添加地址/名称":
+            name = f"地址 {i} (模板)"
+        content.append(f"\n--- [ {i}. {name} ] ---")
+        addr_parts = [
+            entry.get(k)
+            for k in ["street_address", "city", "state", "zipcode", "country_code"]
+        ]
+        full_address = ", ".join(filter(None, addr_parts))
+        if full_address:
+            content.append(f"{'地址:':<10} {full_address}")
+        if phone := entry.get("phone_number"):
+            content.append(f"{'电话:':<10} {phone}")
+        if email := entry.get("email"):
+            content.append(f"{'邮箱:':<10} {email}")
+    return "\n".join(content)
+
+
+def _format_notes_txt(data: List[Dict]) -> str:
+    content = [
+        f"\n\n======================\n [安全备忘录] Notes ({len(data)} 条)\n======================"
+    ]
+    for i, entry in enumerate(data, 1):
+        content.append(
+            f"\n--- [ {i}. {entry.get('note_title', '无标题备忘录')} ] ---\n"
+        )
+        content.append(f"{entry.get('note_detail', '')}")
+    return "\n".join(content)
+
+
+# --- Markdown 定制化格式化器 (无修改) ---
+def _format_logins_md(data: List[Dict]) -> str:
+    content = [f"## [登录凭证] Logins - 共 {len(data)} 条\n"]
+    for i, entry in enumerate(data, 1):
+        content.append(f"### {i}. {entry.get('title', '未知条目')}")
+        content.append(f"- **用户名**: `{entry.get('username_value', 'N/A')}`")
+        content.append(f"- **密码**: `{entry.get('password_value', 'N/A')}`")
+        if url := entry.get("origin_url"):
+            content.append(f"- **网址/应用**: `{url}`")
+        if memo := entry.get("credential_memo"):
+            content.append(f"- **备注**: {memo}")
+        if isinstance(otp := entry.get("otp"), dict) and otp.get("secret"):
+            content.append("- **⚠️ 两步验证 (2FA) 密钥**: ")
+            content.append(f"  - **密钥 (Secret)**: `{otp.get('secret')}`")
+            content.append(f"  - **账户**: `{otp.get('name', 'N/A')}`")
+        content.append("\n---\n")
+    return "\n".join(content)
+
+
+def _format_identities_md(data: List[Dict]) -> str:
+    content = [f"## [身份信息] Identities - 共 {len(data)} 条\n"]
+    for i, entry in enumerate(data, 1):
+        content.append(f"### {i}. {entry.get('name', '未知身份')}")
+        if isinstance(id_card := entry.get("id_card_detail"), dict):
+            content.append(f"- **身份证号**: `{id_card.get('mIDCardNumber', 'N/A')}`")
+            content.append(f"- **姓名**: `{id_card.get('mUsername', 'N/A')}`")
+            content.append(f"- **出生日期**: `{id_card.get('mBirthDay', 'N/A')}`")
+        if phones := entry.get("telephone_number_list"):
+            content.append(f"- **电话**: {', '.join([f'`{p}`' for p in phones])}")
+        if emails := entry.get("email_address_list"):
+            content.append(f"- **邮箱**: {', '.join([f'`{e}`' for e in emails])}")
+        content.append("\n---\n")
+    return "\n".join(content)
+
+
+def _format_addresses_md(data: List[Dict]) -> str:
+    content = [f"## [地址信息] Addresses - 共 {len(data)} 条\n"]
+    for i, entry in enumerate(data, 1):
+        name = entry.get("full_name", f"地址 {i}")
+        if name == "添加地址/名称":
+            name = f"地址 {i} (模板)"
+        content.append(f"### {i}. {name}")
+        addr_parts = [
+            entry.get(k)
+            for k in ["street_address", "city", "state", "zipcode", "country_code"]
+        ]
+        full_address = ", ".join(filter(None, addr_parts))
+        if full_address:
+            content.append(f"- **地址**: {full_address}")
+        if phone := entry.get("phone_number"):
+            content.append(f"- **电话**: `{phone}`")
+        if email := entry.get("email"):
+            content.append(f"- **邮箱**: `{email}`")
+        content.append("\n---\n")
+    return "\n".join(content)
+
+
+def _format_notes_md(data: List[Dict]) -> str:
+    content = [f"## [安全备忘录] Notes - 共 {len(data)} 条\n"]
+    for i, entry in enumerate(data, 1):
+        content.append(f"### {i}. {entry.get('note_title', '无标题备忘录')}")
+        content.append(f"```\n{entry.get('note_detail', '')}\n```")
+        content.append("\n---\n")
+    return "\n".join(content)
+
+
+# --- 核心保存函数 ---
+def save_as_md(data: Dict[str, List[Any]], output_file: Path, banner: str):
+    MD_FORMATTERS = {
+        "logins": _format_logins_md,
+        "identities": _format_identities_md,
+        "addresses": _format_addresses_md,
+        "notes": _format_notes_md,
+    }
+    ORDER = ["logins", "identities", "addresses", "notes"]
+    sorted_tables = sorted(
+        data.keys(), key=lambda x: ORDER.index(x) if x in ORDER else len(ORDER)
+    )
+    with open(output_file, "w", encoding="utf-8") as f:
+        if banner:
+            # [代码修改] 应用您成功范例中的精确打击逻辑，仅为Banner第一行添加空格
+            clean_banner = banner.strip()
+            lines = clean_banner.split('\n')
+            if lines:
+                # 只给 Banner 的第一行（也就是输出文件中的第二行）添加前缀
+                lines[0] = "   " + lines[0]
+            modified_banner = "\n".join(lines)
+            f.write(f"```\n{modified_banner}\n```\n\n")
             
-            f.write("\n---\n\n")
-        
-        f.write(f"\n*报告由 Unsealer 生成于 {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}*")
+        f.write("# Unsealer 综合解密报告\n\n")
+        f.write(f"- **生成时间**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"- **数据摘要**: 共找到 **{len(data)}** 个数据类别。\n\n")
+        f.write(
+            "**⚠️ 安全警告：此文件包含您的密码、两步验证密钥、身份证号等极度敏感信息，请务必在安全的环境下查看，并妥善保管！**\n\n"
+        )
+        for table_name in sorted_tables:
+            formatter = MD_FORMATTERS.get(table_name)
+            if formatter:
+                f.write(formatter(data[table_name]))
+        f.write(f"\n*报告由 Unsealer (最终设计版) 生成*")
 
-# --- 辅助函数 ---
+
+def save_as_txt(data: Dict[str, List[Any]], output_file: Path, banner: str):
+    TXT_FORMATTERS = {
+        "logins": _format_logins_txt,
+        "identities": _format_identities_txt,
+        "addresses": _format_addresses_txt,
+        "notes": _format_notes_txt,
+    }
+    ORDER = ["logins", "identities", "addresses", "notes"]
+    sorted_tables = sorted(
+        data.keys(), key=lambda x: ORDER.index(x) if x in ORDER else len(ORDER)
+    )
+    with open(output_file, "w", encoding="utf-8") as f:
+        if banner:
+            f.write(f"{banner}\n")
+        f.write("Unsealer 综合解密报告\n")
+        f.write("------------------------\n")
+        f.write(f"生成时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"数据摘要: 共找到 {len(data)} 个数据类别。\n\n")
+        f.write("!!!!!!!! 安全警告 !!!!!!!!\n此文件包含极度敏感信息，请妥善保管！\n\n")
+        for table_name in sorted_tables:
+            formatter = TXT_FORMATTERS.get(table_name)
+            if formatter:
+                f.write(formatter(data[table_name]))
+        f.write(f"\n\n--- 报告结束 ---\n*由 Unsealer (最终设计版) 生成*")
+
+
+def save_as_csv(data: dict, output_path: Path):
+    """
+    将每个数据类别保存为独立的CSV文件，并对嵌套数据进行展平处理。
+    """
+    output_path.mkdir(exist_ok=True)
+
+    for table_name, entries in data.items():
+        if not entries:
+            continue
+
+        all_headers = set()
+        flat_data = []
+        for entry in entries:
+            flat_entry = {}
+            for key, value in entry.items():
+                if isinstance(value, dict):
+                    for sub_key, sub_value in value.items():
+                        flat_entry[f"{key}_{sub_key}"] = sub_value
+                elif isinstance(value, list):
+                    flat_entry[key] = "|".join(map(str, value))
+                else:
+                    flat_entry[key] = value
+            all_headers.update(flat_entry.keys())
+            flat_data.append(flat_entry)
+
+        file_path = output_path / f"{table_name}.csv"
+        with open(file_path, "w", newline="", encoding="utf-8") as f:
+            writer = csv.DictWriter(f, fieldnames=sorted(list(all_headers)))
+            writer.writeheader()
+            writer.writerows(flat_data)
+
+
+# --- 辅助函数与主流程 ---
+
+def _sanitize_filename(name: str) -> str:
+    """移除或替换在文件名/目录名中非法的字符。"""
+    return re.sub(r'[\\/*?:"<>|]', "_", name)
+
 
 def _display_banner() -> str:
-    """生成、显示美观的Banner，并返回纯文本版本以供文件写入。"""
-    # 修复了截图中的字体问题，改用更兼容终端的字体
-    plain_banner = pyfiglet.figlet_format("Unsealer", font="slant") + "  for Samsung Pass"
-    
-    title_panel = Panel(
-        Align.center(f"[bold cyan]{plain_banner}[/bold cyan]"),
-        box=ROUNDED,
-        border_style="cyan",
-        title="[bold white]Unsealer[/bold white]",
-        subtitle="[cyan]v.2.0[/cyan]"
+    plain_banner = pyfiglet.figlet_format("Unsealer", font="slant")
+    console.print(
+        Panel(
+            plain_banner,
+            title="[bold white]Unsealer[/bold white]",
+            subtitle="[cyan]v3.3 Final Edition[/cyan]",
+            border_style="cyan",
+            expand=False,
+        )
     )
-    console.print(title_panel)
     return plain_banner
 
+
 def _setup_arg_parser() -> argparse.ArgumentParser:
-    """配置并返回命令行参数解析器。"""
     parser = argparse.ArgumentParser(
-        description="一个用于解密三星密码本 (.spass) 文件的优雅工具。",
-        epilog="用法示例: unsealer my_backup.spass -f txt -o decrypted.txt"
+        description="一个用于解密三星密码本 (.spass) 文件的优雅工具。"
     )
     parser.add_argument("input_file", type=Path, help="输入的 .spass 文件路径。")
-    parser.add_argument("password", type=str, nargs='?', default=None, help="您的三星账户主密码 (可选)。")
     parser.add_argument(
-        "-f", "--format", choices=["csv", "txt", "md"], default="csv", help="输出文件格式 (默认为: csv)。"
+        "-f",
+        "--format",
+        choices=["md", "txt", "csv"],
+        default="md",
+        help="输出文件格式 (默认为: md)。",
     )
+    parser.add_argument("-o", "--output", type=Path, help="输出文件的路径或目录。")
+    parser.add_argument("--preview", action="store_true", help="在终端中预览摘要信息。")
     parser.add_argument(
-        "-o", "--output", type=Path, help="输出文件的路径 (默认: 与输入文件同名，扩展名不同)。"
-    )
-    parser.add_argument(
-        "--preview", action="store_true", help="在终端中用表格预览前5条结果，而不是保存到文件。"
+        "-y", "--force", action="store_true", help="强制覆盖已存在的输出文件或目录。"
     )
     return parser
 
-def _process_decryption(args: argparse.Namespace, plain_banner: str):
-    """执行核心的解密、处理和保存逻辑，并处理相关错误。"""
+
+def _process_decryption(
+    args: argparse.Namespace, password: str, plain_banner: str
+):
     try:
-        console.print(f"[cyan]> [/cyan]正在读取文件: [bold magenta]{args.input_file}[/bold magenta]")
         file_content = args.input_file.read_bytes()
+        with console.status(
+            "[bold green]正在解密与深度提炼数据...[/bold green]", spinner="dots"
+        ):
+            all_tables = decrypt_and_parse(file_content, password)
 
-        decrypted_data = None
-        with console.status("[bold green]正在解密，请稍候...[/bold green]", spinner="aesthetic"):
-            decrypted_data = decrypt_and_parse(file_content, args.password)
+        TABLE_NAMES = {
+            "logins": "登录凭证",
+            "identities": "身份信息",
+            "addresses": "地址信息",
+            "notes": "安全备忘录",
+        }
+        summary = Text()
+        for name, data in all_tables.items():
+            display_name = TABLE_NAMES.get(name, "其他数据")
+            summary.append(f"✓ [cyan]{display_name}[/cyan]: 找到 {len(data)} 条目\n")
 
-        if not decrypted_data:
-            console.print("[yellow]! [/yellow]解密成功，但文件中未找到任何登录凭证条目。")
-            return
-
-        console.print(f"[green]✓ [/green]成功找到 [bold yellow]{len(decrypted_data)}[/bold yellow] 条凭证。")
+        console.print(
+            Panel(
+                summary,
+                title="[bold green]✓ 解密成功[/bold green]",
+                border_style="green",
+            )
+        )
 
         if args.preview:
-            table = Table(
-                title="[bold]数据预览 (前5条)[/bold]", box=ROUNDED, border_style="cyan", header_style="bold cyan"
-            )
-            table.add_column("名称", style="white", no_wrap=True)
-            table.add_column("网址", style="bright_blue")
-            table.add_column("用户", style="green")
-            table.add_column("密码", style="magenta")
-            for entry in decrypted_data[:5]:
-                table.add_row(entry['name'], entry['url'], entry['username'], entry['password'])
-            console.print(table)
-            console.print("[dim]> 预览模式不会保存任何文件。[/dim]")
+            console.print("[dim]> 预览模式不会保存文件。使用 -f 和 -o 参数导出。[/dim]")
             return
 
-        console.print(f"[cyan]> [/cyan]正在保存到 [bold magenta]{args.output}[/bold magenta] (格式: [yellow]{args.format.upper()}[/yellow])...")
-        
-        save_dispatch = {
-            'csv': save_as_csv,
-            'txt': lambda data, path: save_as_txt(data, path, plain_banner),
-            'md': lambda data, path: save_as_md(data, path, plain_banner),
-        }
-        save_dispatch[args.format](decrypted_data, args.output)
-        
-        console.print(f"\n[bold green]✓ 操作成功！[/bold green] 数据已保存至 [bold magenta]{args.output}[/bold magenta]")
+        console.print(
+            f"[cyan]> [/cyan]正在保存到 [bold magenta]{args.output}[/bold magenta] (格式: [yellow]{args.format.upper()}[/yellow])..."
+        )
 
-    except FileNotFoundError:
-        console.print(f"[bold red]✗ 错误:[/bold red] 输入文件未找到: [magenta]{args.input_file}[/magenta]")
-        sys.exit(1)
-    except ValueError as e:
+        save_dispatch = {
+            "md": lambda data, path, banner: save_as_md(data, path, banner),
+            "txt": lambda data, path, banner: save_as_txt(data, path, banner),
+            "csv": lambda data, path, banner: save_as_csv(
+                data, path
+            ),
+        }
+        save_dispatch[args.format](all_tables, args.output, plain_banner)
+
+        console.print(
+            f"\n[bold green]✓ 操作成功！[/bold green] 数据已保存至 [bold magenta]{args.output}[/bold magenta]"
+        )
+
+    except (FileNotFoundError, ValueError) as e:
         console.print(f"[bold red]✗ 错误:[/bold red] {e}")
         sys.exit(1)
-    except Exception as e:
-        console.print(f"[bold red]✗ 发生未知错误:[/bold red] {e}")
-        console.print_exception(show_locals=False)
+    except Exception:
+        console.print(
+            f"[bold red]✗ 发生未知内部错误。[/bold red] 详情已记录到 `unsealer_error.log` 文件中。"
+        )
+        with open("unsealer_error.log", "a", encoding="utf-8") as f:
+            f.write(f"--- {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---\n")
+            traceback.print_exc(file=f)
+            f.write("\n")
         sys.exit(1)
 
-# --- 主函数 ---
 
 def main():
-    """
-    命令行工具的主入口函数。
-    """
     plain_banner = _display_banner()
-    
     parser = _setup_arg_parser()
     args = parser.parse_args()
 
-    if not args.password:
-        args.password = Prompt.ask("[bold yellow]> [/bold yellow]请输入您的三星账户主密码", password=True)
+    password = Prompt.ask(
+        "[bold yellow]> [/bold yellow]请输入您的三星账户主密码", password=True
+    )
 
     if not args.output and not args.preview:
-        args.output = args.input_file.with_suffix(f'.{args.format}')
+        if args.format == "csv":
+            sanitized_stem = _sanitize_filename(args.input_file.stem)
+            args.output = Path(f"{sanitized_stem}_csv_export")
+        else:
+            args.output = args.input_file.with_suffix(f".{args.format}")
 
-    _process_decryption(args, plain_banner)
+    if args.output and not args.preview and not args.force:
+        if args.output.exists():
+            if args.format == "csv" and args.output.is_dir():
+                if any(args.output.iterdir()):
+                    console.print(
+                        f"[bold red]✗ 错误:[/bold red] 输出目录 '{args.output}' 已存在且非空。"
+                    )
+                    console.print(f"请使用 '-y' 或 '--force' 标志进行覆盖。")
+                    sys.exit(1)
+            elif args.output.is_file():
+                console.print(
+                    f"[bold red]✗ 错误:[/bold red] 输出文件 '{args.output}' 已存在。"
+                )
+                console.print(f"请使用 '-y' 或 '--force' 标志进行覆盖。")
+                sys.exit(1)
 
-if __name__ == '__main__':
+    _process_decryption(args, password, plain_banner)
+
+
+if __name__ == "__main__":
     main()

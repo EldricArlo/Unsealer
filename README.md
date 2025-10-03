@@ -1,74 +1,75 @@
 # Unsealer (Samsung)
 
-[![PyPI Version](https://img.shields.io/badge/pypi-v0.2.0-blue)](https://pypi.org/project/unsealer-samsung/)
+[![PyPI Version](https://img.shields.io/badge/pypi-v3.3-blue)](https://pypi.org/project/unsealer-samsung/)
 [![Python Versions](https://img.shields.io/badge/python-3.7+-brightgreen.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Telegram](https://img.shields.io/badge/Telegram-%235AA9E6?logo=telegram&labelColor=FFFFFF)](https://t.me/+dHEs5v_mLfNjYjk0)
 
-**Unsealer (Samsung)** is a simple, open-source command-line tool to decrypt Samsung Pass (`.spass`) backup files. It allows you to securely export your stored credentials into human-readable formats like CSV, TXT, or Markdown, giving you control over your own data.
+**Unsealer (Samsung)** 是一个简洁、优雅的开源命令行工具，专用于解密三星密码本 (`.spass`) 的备份文件。它能让你安全地将存储的凭证、身份信息、地址和备忘录导出为人类可读的格式，如 Markdown、纯文本(TXT)或 CSV，让你真正掌控自己的数据。
 
 <br>
 
 > [!CAUTION]
-> **Disclaimer & Security Notice**
+> **免责声明与安全警告**
 >
-> This tool is based on reverse engineering of the `.spass` file format and is provided for personal, educational, and data recovery purposes only. It is not an official Samsung product.
+> 本工具基于对 `.spass` 文件格式的逆向工程开发，仅供个人、教育和数据恢复目的使用。它并非三星官方产品。
 >
-> - **Use it at your own risk.** The author is not responsible for any data loss or security breaches.
-> - **Handle your password data with extreme care.** Your master password and decrypted files contain highly sensitive information. Do not share them or store them in unsecured locations.
-> - **This tool runs entirely offline.** It does not connect to the internet or send your data anywhere.
+> - **请自行承担使用风险。** 作者不对任何数据丢失或安全漏洞负责。
+> - **请极度谨慎地处理您的数据。** 您的主密码和解密后的文件包含高度敏感信息。切勿分享或将它们存储在不安全的位置。
+> - **本工具完全离线运行。** 它不会连接到互联网或将您的数据发送到任何地方。
 
 <br>
 
-## Key Features
+## 核心特性
 
--   **Secure Offline Decryption**: All operations are performed locally on your machine.
--   **Multiple Export Formats**: Save your data as CSV (for spreadsheets), plain TXT, or a Markdown table.
--   **User-Friendly CLI**: An enhanced command-line interface with colors, spinners, and progress indicators.
--   **Safe Password Input**: Prompts for your password securely without showing it on screen.
--   **Data Preview**: Quickly preview your decrypted data directly in the terminal without saving a file.
--   **Cross-Platform**: Runs on Windows, macOS, and Linux (anywhere Python is installed).
--   **Open Source**: The code is fully transparent and available for audit.
-
----
-
-## How to Get Your `.spass` File
-
-The `.spass` backup file is typically created using Samsung's **Smart Switch** application on your PC or Mac.
-
-1.  **Connect Your Phone**: Connect your Samsung phone to your computer via a USB cable.
-2.  **Open Smart Switch**: Launch the Smart Switch application on your computer.
-3.  **Perform a Backup**:
-    *   Click on the "Backup" option.
-    *   You may be prompted to select which items to back up. Ensure that **"Settings"** or a similar category containing passwords is selected.
-    *   Let the backup process complete.
-4.  **Locate the File**:
-    *   After the backup is finished, navigate to the Smart Switch backup folder on your computer.
-    *   Inside the backup folder, look for a path similar to `\SAMSUNG\PASS\backup\`.
-    *   You should find your backup file there, usually named with a timestamp, e.g., `20250913_103000.spass`.
-
-This is the file you will use with Unsealer.
+-   **🔐 安全离线解密**: 所有操作都在您的本地计算机上执行，数据绝不外泄。
+-   **📄 多种导出格式**: 将您的数据保存为精美的 **Markdown** 报告、纯文本 **TXT** 或用于电子表格的 **CSV** 文件集。
+-   **✨ 丰富的数据解析**: 不仅仅是密码！完整解析并分类整理 **登录凭证、身份信息、地址、安全备忘录** 四大类数据。
+-   **🛡️ 强制安全密码输入**: 为防止密码在Shell历史中泄露，本工具强制使用安全的交互式提示输入密码，不会在屏幕上显示。
+-   **👀 数据摘要预览**: 无需生成文件，直接在终端中快速预览解密出的数据类别和条目数量。
+-   **⚙️ 健壮的错误处理**: 发生未知错误时，会自动生成 `unsealer_error.log` 日志文件，便于排查问题。
+-   **跨平台**: 可在 Windows, macOS 和 Linux 上运行 (任何安装了 Python 的地方)。
+-   **开源透明**: 代码完全开放，可供任何人审查。
 
 ---
 
-## Installation
+## 如何获取您的 `.spass` 文件
 
-You need **Python 3.7+** installed on your system.
+`.spass` 备份文件通常通过三星的 **Smart Switch (智能同步)** 电脑端应用创建。
 
-### 1. Recommended Method (via PyPI)
+1.  **连接您的手机**: 使用 USB 数据线将您的三星手机连接到电脑。
+2.  **打开 Smart Switch**: 在您的电脑上启动 Smart Switch 应用。
+3.  **执行备份**:
+    *   点击“备份”选项。
+    *   系统可能会提示您选择要备份的项目。请确保 **“设置”** 或包含密码的类似类别已被选中。
+    *   让备份过程完整进行。
+4.  **找到文件**:
+    *   备份完成后，在您的电脑上找到 Smart Switch 的备份文件夹。
+    *   在备份文件夹内，寻找类似 `\SAMSUNG\PASS\backup\` 的路径。
+    *   您应该能在这里找到您的备份文件，通常以时间戳命名，例如 `20250913_103000.spass`。
 
-This is the simplest and most direct way. Open your terminal or command prompt and run:
+这就是您将与 Unsealer 一起使用的文件。
+
+---
+
+## 安装
+
+您的系统需要安装 **Python 3.7+**。
+
+### 推荐方式 (通过 PyPI)
+
+这是最简单直接的方法。打开您的终端或命令提示符并运行：
 
 ```bash
 pip install unsealer-samsung
 ```
 
 > [!TIP]
-> If the `pip` command is not found, try using `pip3` instead: `pip3 install unsealer-samsung`
+> 如果 `pip` 命令未找到，请尝试使用 `pip3`：`pip3 install unsealer-samsung`
 
-### 2. Alternative Method (Latest Version from GitHub)
+### 备选方式 (从 GitHub 安装最新版)
 
-If you want to install the absolute latest (potentially unstable) version directly from the source code, you will also need **Git**.
+如果您想安装最新的（可能不稳定的）开发版本，您还需要安装 **Git**。
 
 ```bash
 pip install git+https://github.com/EldricArlo/Unsealer.git
@@ -76,103 +77,108 @@ pip install git+https://github.com/EldricArlo/Unsealer.git
 
 ---
 
-## Usage
+## 使用说明
 
-The tool requires the path to your `.spass` file. You can provide your password directly or wait for the tool to ask for it securely.
+本工具的核心设计理念是 **安全第一**。因此，它 **不会** 接受通过命令行参数传入密码。相反，它总是在运行时通过一个安全、无回显的提示来请求您的主密码。
 
-### Basic Command Structure
+### 基本命令结构
 
 ```bash
-unsealer <path_to_your_spass_file> "[your_master_password]" [options]
+unsealer <您的spass文件路径> [选项]
 ```
 
-> [!IMPORTANT]
-> If you provide your password as an argument, **always wrap your password in quotes (`"`)!**
-> This prevents special characters in your password (like `!`, `$`, `&`, etc.) from being misinterpreted by your command line shell.
+### 选项
 
-### Options
+| 短标志         | 长标志               | 描述                                                                                                           |
+| -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `input_file`   | _(N/A)_              | **(必需)** 您的 `.spass` 备份文件的路径。                                                                      |
+| `-f`           | `--format`           | 输出格式。可选值: `md`, `txt`, `csv`。**默认为 `md` (Markdown)**。                                             |
+| `-o`           | `--output`           | 输出文件的路径或目录。若不指定，将根据输入文件名自动生成。                                                     |
+|                | `--preview`          | **预览模式**。在终端中显示解密出的数据类别和条目总数摘要，而不会保存任何文件。                                 |
+| `-y`           | `--force`            | **强制覆盖**。如果输出文件或目录已存在，此标志将强制覆盖它，否则程序会报错并退出。                             |
 
-| Flag                 | Long Version         | Description                                                                                              |
-| -------------------- | -------------------- | -------------------------------------------------------------------------------------------------------- |
-| `input_file`         | _(N/A)_              | **(Required)** The path to your `.spass` backup file.                                                    |
-| `password`           | _(N/A)_              | **(Optional)** Your Samsung account master password. If not provided, the tool will securely prompt you for it. |
-| `-f`                 | `--format`           | The output format. Choices: `csv`, `txt`, `md`. **Default is `csv`**.                                      |
-| `-o`                 | `--output`           | The path for the output file. If not specified, it defaults to the input filename with the new extension. |
-|                      | `--preview`          | Displays the first 5 entries as a table in the terminal instead of saving a file.                         |
+### 使用范例
 
+**1. 推荐的标准用法 (交互式密码输入)**
 
-### Examples
-
-**1. Recommended Secure Usage (Interactive Password Prompt)**
-
-Simply run the command with the file path. The tool will then securely ask for your password. This is the safest way to use it.
+这是最安全、最推荐的使用方式。只需提供文件路径，程序将安全地提示您输入密码。
 
 ```bash
 unsealer ./my_samsung_data.spass
-# The program will now prompt:
-# Please enter your Samsung account master password: ****
+
+# 程序将会提示:
+# > 请输入您的三星账户主密码: ****
 ```
+*解密成功后，将在同目录下生成一个名为 `my_samsung_data.md` 的精美报告。*
 
-**2. Decrypt and Save as CSV (Password as Argument)**
-
-This will decrypt `my_samsung_data.spass` and create `my_samsung_data.csv` in the same folder.
+**2. 导出为纯文本 (TXT) 格式**
 
 ```bash
-unsealer ./my_samsung_data.spass "MyP@ssw0rd!123"
+unsealer ./my_samsung_data.spass -f txt
 ```
+*这将在同目录下创建一个 `my_samsung_data.txt` 文件。*
 
-**3. Preview Data Directly in the Terminal**
+**3. 导出为 CSV 文件集并指定输出目录**
 
-If you just want to quickly check the contents without creating a file, use the `--preview` flag.
+CSV 格式会为每个数据类别（logins, identities 等）创建一个独立的 `.csv` 文件。
 
 ```bash
-unsealer ./samsung.spass "MyP@ssw0rd!123" --preview
+unsealer C:\backups\samsung.spass -f csv -o C:\MyExportedData
 ```
+*这将在 `C:\MyExportedData` 目录下生成 `logins.csv`, `identities.csv` 等文件。*
 
-**4. Save as a Markdown Table with a Custom Name**
+**4. 在终端中快速预览数据摘要**
 
-This exports the data into a clean, readable Markdown table named `report.md`.
+如果您只想快速检查文件是否可被解密以及包含哪些数据，使用 `--preview` 标志。
 
 ```bash
-unsealer C:\backups\samsung.spass "MyP@ssw0rd!123" --format md --output report.md
+unsealer ./samsung.spass --preview
+# 程序会提示输入密码，然后显示如下摘要信息，但不会创建文件：
+# ✓ 解密成功
+# ✓ 登录凭证: 找到 125 条目
+# ✓ 身份信息: 找到 3 条目
+# ✓ 地址信息: 找到 8 条目
+# ...
 ```
+---
+
+## 常见问题 (FAQ)
+
+**Q: 我收到了“解密失败”或“文件可能已损坏”的错误，怎么办？**
+A: 这通常意味着以下三种情况之一：
+   1.  **密码错误**: 您输入的三星账户主密码不正确。密码是大小写敏感的，请仔细检查。
+   2.  **文件损坏**: `.spass` 文件本身在备份过程中可能已损坏或不完整。请尝试使用 Smart Switch 创建一个全新的备份。
+   3.  **格式不兼容**: 三星可能在较新版本的 Smart Switch 或三星密码本中更新了加密或数据结构。由于本工具基于逆向工程，格式的变更可能会导致它无法读取新版文件，直到工具本身得到更新。
+
+**Q: 我遇到了“发生未知内部错误”，该怎么办？**
+A: 本工具设计了健壮的日志记录功能。当出现此提示时，请检查程序运行目录下是否生成了一个名为 `unsealer_error.log` 的文件。此文件包含了详细的技术错误信息，您可以在提交 Issue 时附上此文件的内容，以帮助开发者快速定位问题。
+
+**Q: 这个工具安全吗？它会偷我的密码吗？**
+A: 本工具将安全放在首位：
+   - 它 **100% 离线运行**。它不会也不能通过互联网发送您的任何数据。
+   - 它是 **开源** 的，任何人都可以审查源代码 (`decrypter.py`) 来验证它只执行本地解密操作。
+
+**Q: 这个工具能用于未来版本的三星密码本吗？**
+A: **不一定。** 本工具基于其开发时所采用的文件格式。如果三星在未来的更新中决定更改其加密方法，本工具可能会失效，直到社区对其进行更新。
 
 ---
 
-## FAQ (Frequently Asked Questions)
+## 工作原理 (技术细节)
 
-**Q: I'm getting a "decryption or parsing failed" error. What's wrong?**
-A: This is the most common error and it almost always means one of three things:
-   1.  **Incorrect Password**: You might have mistyped your Samsung account master password. Passwords are case-sensitive. Please double-check it carefully.
-   2.  **Corrupted File**: The `.spass` file itself might be damaged or incomplete from the backup process. Try creating a fresh backup from your phone using Smart Switch.
-   3.  **Incompatible File Format**: Samsung may have updated the encryption or data structure within the `.spass` file in a newer version of Smart Switch or Samsung Pass. Since this tool is based on reverse engineering, a format change could render it unable to read newer files until the tool itself is updated.
+对于技术细节感兴趣的用户，解密过程基于对 `.spass` 格式的逆向，遵循以下关键步骤：
 
-**Q: Is this tool safe? Can it steal my passwords?**
-A: This tool is designed with security as a top priority.
-   - It runs **100% offline**. It does not and cannot send any of your data over the internet.
-   - It is **open source**, meaning anyone can inspect the code (`decrypter.py`) to verify that it only performs local decryption.
-
-**Q: Will this tool work with future versions of Samsung Pass?**
-A: **Maybe not.** This tool is based on the file format used by Samsung as of the time of its development. If Samsung decides to change its encryption method in a future update, this tool may stop working until it is updated by the community.
+1.  **Base64 解码**: 整个 `.spass` 文件是一个 Base64 编码的字符串。第一步是将其解码为原始二进制数据。
+2.  **提取组件**: 二进制数据被分为三部分：一个 20 字节的 **盐 (salt)**，一个 16 字节的 **初始化向量 (IV)**，以及剩余的 **加密数据**。
+3.  **派生密钥**: 您的主密码并非直接的密钥。工具使用 **PBKDF2-HMAC-SHA256** 算法，将您的密码与盐结合，并执行 **70,000** 轮哈希运算，以派生出一个安全的 256 位 (32字节) AES 密钥。这使得对密码的暴力破解极为困难。
+4.  **AES 解密**: 使用派生出的密钥和 IV，通过 **AES-256-CBC** 模式对数据进行解密。
+5.  **解析数据**: 解密后的内容是一个巨大的、由分号分隔的文本块。工具会进一步解析这个块，识别出不同的数据表（如登录凭证、身份信息等），并对每个字段（它们本身也经过了 Base64 编码）进行最终解码，以提取出干净、结构化的数据。
 
 ---
 
-## How It Works (Technical Details)
+## 致谢
 
-For those interested in the technical specifics, the decryption process follows these key steps, based on the reverse engineering of the `.spass` format:
+本项目中核心的解密逻辑得以实现，离不开 **0xdeb7ef** 在 [**spass-manager**](https://github.com/0xdeb7ef/spass-manager) 项目中所做的杰出逆向工程工作。我们的 Python 实现是基于其发现和记录的逻辑的直接移植。我们由衷感谢他们对开源社区的贡献。
 
-1.  **Base64 Decode**: The entire `.spass` file is a Base64 encoded string. The first step is to decode it into raw binary data.
-2.  **Extract Components**: The binary data is split into three parts: a 20-byte **salt**, a 16-byte **initialization vector (IV)**, and the remaining **encrypted data**.
-3.  **Derive Key**: Your master password is not the direct key. Instead, the tool uses the **PBKDF2-SHA256** algorithm. It combines your password with the salt and performs 70,000 rounds of hashing to derive a secure 256-bit (32-byte) AES key. This makes brute-force attacks extremely difficult.
-4.  **AES Decrypt**: The derived key and IV are used to decrypt the data using the **AES-256-CBC** cipher.
-5.  **Parse Data**: The decrypted content is a large text block. The tool parses this block, finds the login credentials table, and decodes each field (which is also Base64 encoded) to retrieve your final data.
+## 许可证
 
----
-
-## Acknowledgements
-
-The core decryption logic used in this project would not have been possible without the excellent reverse engineering work done by **0xdeb7ef** in the [**spass-manager**](https://github.com/0xdeb7ef/spass-manager) project. Our Python implementation is a direct port of the logic discovered and documented there. We are grateful for their contribution to the open-source community.
-
-## License
-
-This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
+本项目采用 **MIT 许可证**。详情请见 [LICENSE](LICENSE) 文件。
