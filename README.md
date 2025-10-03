@@ -1,6 +1,6 @@
 # Unsealer (Samsung)
 
-[![PyPI Version](https://img.shields.io/badge/pypi-v0.1.0-blue)](https://pypi.org/project/unsealer-samsung/)
+[![PyPI Version](https://img.shields.io/badge/pypi-v0.2.0-blue)](https://pypi.org/project/unsealer-samsung/)
 [![Python Versions](https://img.shields.io/badge/python-3.7+-brightgreen.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Telegram](https://img.shields.io/badge/Telegram-%235AA9E6?logo=telegram&labelColor=FFFFFF)](https://t.me/+dHEs5v_mLfNjYjk0)
@@ -24,7 +24,9 @@
 
 -   **Secure Offline Decryption**: All operations are performed locally on your machine.
 -   **Multiple Export Formats**: Save your data as CSV (for spreadsheets), plain TXT, or a Markdown table.
--   **Easy to Use**: A straightforward command-line interface.
+-   **User-Friendly CLI**: An enhanced command-line interface with colors, spinners, and progress indicators.
+-   **Safe Password Input**: Prompts for your password securely without showing it on screen.
+-   **Data Preview**: Quickly preview your decrypted data directly in the terminal without saving a file.
 -   **Cross-Platform**: Runs on Windows, macOS, and Linux (anywhere Python is installed).
 -   **Open Source**: The code is fully transparent and available for audit.
 
@@ -76,16 +78,16 @@ pip install git+https://github.com/EldricArlo/Unsealer.git
 
 ## Usage
 
-The tool requires two main arguments: the path to your `.spass` file and your Samsung account master password.
+The tool requires the path to your `.spass` file. You can provide your password directly or wait for the tool to ask for it securely.
 
 ### Basic Command Structure
 
 ```bash
-unsealer <path_to_your_spass_file> "<your_master_password>" [options]
+unsealer <path_to_your_spass_file> "[your_master_password]" [options]
 ```
 
 > [!IMPORTANT]
-> **Always wrap your password in quotes (`"`)!**
+> If you provide your password as an argument, **always wrap your password in quotes (`"`)!**
 > This prevents special characters in your password (like `!`, `$`, `&`, etc.) from being misinterpreted by your command line shell.
 
 ### Options
@@ -93,34 +95,46 @@ unsealer <path_to_your_spass_file> "<your_master_password>" [options]
 | Flag                 | Long Version         | Description                                                                                              |
 | -------------------- | -------------------- | -------------------------------------------------------------------------------------------------------- |
 | `input_file`         | _(N/A)_              | **(Required)** The path to your `.spass` backup file.                                                    |
-| `password`           | _(N/A)_              | **(Required)** Your Samsung account master password.                                                     |
+| `password`           | _(N/A)_              | **(Optional)** Your Samsung account master password. If not provided, the tool will securely prompt you for it. |
 | `-f`                 | `--format`           | The output format. Choices: `csv`, `txt`, `md`. **Default is `csv`**.                                      |
 | `-o`                 | `--output`           | The path for the output file. If not specified, it defaults to the input filename with the new extension. |
+|                      | `--preview`          | Displays the first 5 entries as a table in the terminal instead of saving a file.                         |
+
 
 ### Examples
 
-**1. Decrypt and Save as CSV (Default)**
+**1. Recommended Secure Usage (Interactive Password Prompt)**
 
-This is the most common use case. It will decrypt `my_samsung_data.spass` and create a `my_samsung_data.csv` file in the same folder.
+Simply run the command with the file path. The tool will then securely ask for your password. This is the safest way to use it.
+
+```bash
+unsealer ./my_samsung_data.spass
+# The program will now prompt:
+# Please enter your Samsung account master password: ****
+```
+
+**2. Decrypt and Save as CSV (Password as Argument)**
+
+This will decrypt `my_samsung_data.spass` and create `my_samsung_data.csv` in the same folder.
 
 ```bash
 unsealer ./my_samsung_data.spass "MyP@ssw0rd!123"
 ```
 
-**2. Decrypt and Save as a Plain Text File**
+**3. Preview Data Directly in the Terminal**
 
-This command specifies the format as `txt` and sets a custom output file name.
+If you just want to quickly check the contents without creating a file, use the `--preview` flag.
 
 ```bash
-unsealer C:\Users\Me\Desktop\samsung.spass "MyP@ssw0rd!123" -f txt -o C:\Users\Me\Desktop\decrypted.txt
+unsealer ./samsung.spass "MyP@ssw0rd!123" --preview
 ```
 
-**3. Decrypt and Save as a Markdown Table**
+**4. Save as a Markdown Table with a Custom Name**
 
 This exports the data into a clean, readable Markdown table named `report.md`.
 
 ```bash
-unsealer ./my_samsung_data.spass "MyP@ssw0rd!123" --format md --output report.md
+unsealer C:\backups\samsung.spass "MyP@ssw0rd!123" --format md --output report.md
 ```
 
 ---
@@ -128,9 +142,10 @@ unsealer ./my_samsung_data.spass "MyP@ssw0rd!123" --format md --output report.md
 ## FAQ (Frequently Asked Questions)
 
 **Q: I'm getting a "decryption or parsing failed" error. What's wrong?**
-A: This error almost always means one of two things:
-   1.  **Incorrect Password**: You might have mistyped your Samsung account master password. Passwords are case-sensitive. Please double-check it.
-   2.  **Corrupted File**: The `.spass` file itself might be corrupted or incomplete. Try creating a new backup from your phone.
+A: This is the most common error and it almost always means one of three things:
+   1.  **Incorrect Password**: You might have mistyped your Samsung account master password. Passwords are case-sensitive. Please double-check it carefully.
+   2.  **Corrupted File**: The `.spass` file itself might be damaged or incomplete from the backup process. Try creating a fresh backup from your phone using Smart Switch.
+   3.  **Incompatible File Format**: Samsung may have updated the encryption or data structure within the `.spass` file in a newer version of Smart Switch or Samsung Pass. Since this tool is based on reverse engineering, a format change could render it unable to read newer files until the tool itself is updated.
 
 **Q: Is this tool safe? Can it steal my passwords?**
 A: This tool is designed with security as a top priority.
