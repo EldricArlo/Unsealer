@@ -1,75 +1,77 @@
-# Unsealer (Samsung)
+# Unsealer for Samsung Pass
 
-[![PyPI Version](https://img.shields.io/badge/pypi-v3.3-blue)](https://pypi.org/project/unsealer-samsung/)
+[![PyPI Version](https://img.shields.io/badge/pypi-v0.2.0-blue)](https://pypi.org/project/unsealer-samsung/)
 [![Python Versions](https://img.shields.io/badge/python-3.7+-brightgreen.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Telegram](https://img.shields.io/badge/Telegram-%235AA9E6?logo=telegram&labelColor=FFFFFF)](https://t.me/+dHEs5v_mLfNjYjk0)
+[![Telegram](https://img.shields.io/badge/Community-%235AA9E6?logo=telegram&labelColor=FFFFFF)](https://t.me/+dHEs5v_mLfNjYjk0)
 
-**Unsealer (Samsung)** 是一个简洁、优雅的开源命令行工具，专用于解密三星密码本 (`.spass`) 的备份文件。它能让你安全地将存储的凭证、身份信息、地址和备忘录导出为人类可读的格式，如 Markdown、纯文本(TXT)或 CSV，让你真正掌控自己的数据。
+**Reclaim your digital credentials.** Unsealer is a powerful, open-source command-line utility designed to liberate your data from Samsung Pass (`.spass`) backups. It empowers you to securely decrypt and export your sensitive information—including logins, identities, addresses, and notes—into open, human-readable formats like CSV, TXT, or Markdown.
 
-<br>
-
-> [!CAUTION]
-> **免责声明与安全警告**
->
-> 本工具基于对 `.spass` 文件格式的逆向工程开发，仅供个人、教育和数据恢复目的使用。它并非三星官方产品。
->
-> - **请自行承担使用风险。** 作者不对任何数据丢失或安全漏洞负责。
-> - **请极度谨慎地处理您的数据。** 您的主密码和解密后的文件包含高度敏感信息。切勿分享或将它们存储在不安全的位置。
-> - **本工具完全离线运行。** 它不会连接到互联网或将您的数据发送到任何地方。
+Whether you're migrating to a new password manager, creating a secure offline backup, or simply want true ownership of your digital life, Unsealer gives you back control.
 
 <br>
 
-## 核心特性
+> [!DANGER]
+> **Security is Paramount: Read Before Use**
+>
+> This tool is the result of reverse engineering and is intended for personal data recovery and educational purposes. It is not an official Samsung product.
+>
+> - **USE AT YOUR OWN RISK.** The author assumes no liability for data loss or security incidents.
+> - **HANDLE DECRYPTED DATA WITH EXTREME CAUTION.** Your exported files will contain your most sensitive information in plain text. Store them in an encrypted, secure location and never share them.
+> - **100% OFFLINE AND PRIVATE.** Unsealer operates entirely on your local machine. It does not, and cannot, connect to the internet or transmit your data anywhere.
 
--   **🔐 安全离线解密**: 所有操作都在您的本地计算机上执行，数据绝不外泄。
--   **📄 多种导出格式**: 将您的数据保存为精美的 **Markdown** 报告、纯文本 **TXT** 或用于电子表格的 **CSV** 文件集。
--   **✨ 丰富的数据解析**: 不仅仅是密码！完整解析并分类整理 **登录凭证、身份信息、地址、安全备忘录** 四大类数据。
--   **🛡️ 强制安全密码输入**: 为防止密码在Shell历史中泄露，本工具强制使用安全的交互式提示输入密码，不会在屏幕上显示。
--   **👀 数据摘要预览**: 无需生成文件，直接在终端中快速预览解密出的数据类别和条目数量。
--   **⚙️ 健壮的错误处理**: 发生未知错误时，会自动生成 `unsealer_error.log` 日志文件，便于排查问题。
--   **跨平台**: 可在 Windows, macOS 和 Linux 上运行 (任何安装了 Python 的地方)。
--   **开源透明**: 代码完全开放，可供任何人审查。
+<br>
 
----
+## Core Features
 
-## 如何获取您的 `.spass` 文件
-
-`.spass` 备份文件通常通过三星的 **Smart Switch (智能同步)** 电脑端应用创建。
-
-1.  **连接您的手机**: 使用 USB 数据线将您的三星手机连接到电脑。
-2.  **打开 Smart Switch**: 在您的电脑上启动 Smart Switch 应用。
-3.  **执行备份**:
-    *   点击“备份”选项。
-    *   系统可能会提示您选择要备份的项目。请确保 **“设置”** 或包含密码的类似类别已被选中。
-    *   让备份过程完整进行。
-4.  **找到文件**:
-    *   备份完成后，在您的电脑上找到 Smart Switch 的备份文件夹。
-    *   在备份文件夹内，寻找类似 `\SAMSUNG\PASS\backup\` 的路径。
-    *   您应该能在这里找到您的备份文件，通常以时间戳命名，例如 `20250913_103000.spass`。
-
-这就是您将与 Unsealer 一起使用的文件。
+-   🔐 **100% Offline & Secure**: Your master password and decrypted data never leave your computer.
+-   📄 **Comprehensive Data Export**: Go beyond just passwords. Unsealer intelligently parses and exports all major data categories from your backup.
+-   ✨ **Multiple Versatile Formats**: Export your data as **CSV** for spreadsheets, plain **TXT** for easy reading, or structured **Markdown** for reports.
+-   🛡️ **Security-First Design**: Enforces a secure, interactive password prompt that prevents your master password from being saved in your shell history.
+-   👀 **Instant Data Preview**: Quickly inspect the contents of your backup directly in your terminal without writing any files to disk.
+-   ⚙️ **Robust and User-Friendly**: A polished CLI with clear instructions, progress indicators, and helpful error messages.
+-   🌍 **Cross-Platform**: Fully compatible with Windows, macOS, and Linux—anywhere Python 3.7+ is installed.
+-   📖 **Transparent & Auditable**: The source code is open for anyone to inspect and verify its security and functionality.
 
 ---
 
-## 安装
+## Step 1: Getting Your `.spass` File
 
-您的系统需要安装 **Python 3.7+**。
+The `.spass` backup file is created using Samsung's **Smart Switch** desktop application.
 
-### 推荐方式 (通过 PyPI)
+1.  **Connect Your Phone**: Use a USB cable to connect your Samsung device to your PC or Mac.
+2.  **Launch Smart Switch**: Open the Smart Switch application on your computer.
+3.  **Perform a Backup**:
+    *   Select the **"Backup"** option.
+    *   In the item selection screen, ensure that **"Settings"** is checked, as this category contains the Samsung Pass data.
+    *   Allow the backup process to complete fully.
+4.  **Locate the File**:
+    *   Once finished, navigate to the Smart Switch backup directory on your computer.
+    *   Look for a path similar to `\SAMSUNG\PASS\backup\`.
+    *   Your backup file will be inside, typically named with a timestamp (e.g., `20250913_103000.spass`).
 
-这是最简单直接的方法。打开您的终端或命令提示符并运行：
+This is the encrypted file you will use with Unsealer.
+
+---
+
+## Step 2: Installation
+
+Ensure you have **Python 3.7 or newer** installed on your system.
+
+### Recommended Method (from PyPI)
+
+This is the simplest and most reliable way to install Unsealer. Open your terminal and run:
 
 ```bash
 pip install unsealer-samsung
 ```
 
 > [!TIP]
-> 如果 `pip` 命令未找到，请尝试使用 `pip3`：`pip3 install unsealer-samsung`
+> If the `pip` command is not found, your system may use `pip3`. Try: `pip3 install unsealer-samsung`
 
-### 备选方式 (从 GitHub 安装最新版)
+### Alternative Method (from GitHub)
 
-如果您想安装最新的（可能不稳定的）开发版本，您还需要安装 **Git**。
+To install the latest development version (which may be unstable), you will need **Git** installed.
 
 ```bash
 pip install git+https://github.com/EldricArlo/Unsealer.git
@@ -77,108 +79,114 @@ pip install git+https://github.com/EldricArlo/Unsealer.git
 
 ---
 
-## 使用说明
+## Step 3: Usage
 
-本工具的核心设计理念是 **安全第一**。因此，它 **不会** 接受通过命令行参数传入密码。相反，它总是在运行时通过一个安全、无回显的提示来请求您的主密码。
+Unsealer is designed with a security-first philosophy. The recommended and safest way to use it is via the interactive password prompt.
 
-### 基本命令结构
+### Recommended Usage (Secure Prompt)
 
-```bash
-unsealer <您的spass文件路径> [选项]
-```
-
-### 选项
-
-| 短标志         | 长标志               | 描述                                                                                                           |
-| -------------- | -------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `input_file`   | _(N/A)_              | **(必需)** 您的 `.spass` 备份文件的路径。                                                                      |
-| `-f`           | `--format`           | 输出格式。可选值: `md`, `txt`, `csv`。**默认为 `md` (Markdown)**。                                             |
-| `-o`           | `--output`           | 输出文件的路径或目录。若不指定，将根据输入文件名自动生成。                                                     |
-|                | `--preview`          | **预览模式**。在终端中显示解密出的数据类别和条目总数摘要，而不会保存任何文件。                                 |
-| `-y`           | `--force`            | **强制覆盖**。如果输出文件或目录已存在，此标志将强制覆盖它，否则程序会报错并退出。                             |
-
-### 使用范例
-
-**1. 推荐的标准用法 (交互式密码输入)**
-
-这是最安全、最推荐的使用方式。只需提供文件路径，程序将安全地提示您输入密码。
+This is the safest method, as your password will not be visible on screen or stored in your command history.
 
 ```bash
-unsealer ./my_samsung_data.spass
-
-# 程序将会提示:
-# > 请输入您的三星账户主密码: ****
+unsealer /path/to/your/samsung_backup.spass
 ```
-*解密成功后，将在同目录下生成一个名为 `my_samsung_data.md` 的精美报告。*
 
-**2. 导出为纯文本 (TXT) 格式**
+The tool will then securely prompt you to enter your password:
+`Please enter your Samsung account master password:`
+
+### Command-Line Reference
 
 ```bash
-unsealer ./my_samsung_data.spass -f txt
+unsealer <input_file> [password] [options]
 ```
-*这将在同目录下创建一个 `my_samsung_data.txt` 文件。*
 
-**3. 导出为 CSV 文件集并指定输出目录**
+**Arguments:**
 
-CSV 格式会为每个数据类别（logins, identities 等）创建一个独立的 `.csv` 文件。
+| Argument       | Description                                                                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `input_file`   | **(Required)** The file path to your `.spass` backup.                                                                                    |
+| `password`     | **(Optional)** Your Samsung account master password. If omitted, you will be prompted securely. **(See warning below)**                    |
+
+**Options:**
+
+| Flag        | Long Version | Description                                                                                                |
+| ----------- | ------------ | ---------------------------------------------------------------------------------------------------------- |
+| `-f`, `-F`  | `--format`   | The output format. Choices: `csv`, `txt`, `md`. **Default: `csv`**.                                          |
+| `-o`, `-O`  | `--output`   | The destination path for the output file. Defaults to the input filename with the new extension.           |
+|             | `--preview`  | Displays the first 5 entries as a table in the terminal instead of saving a file.                          |
+
+
+> [!WARNING]
+> **Security Risk of Command-Line Passwords**
+>
+> Providing your password directly as a command-line argument is **strongly discouraged**. Your command history is often stored in a plain text file (e.g., `.bash_history`), which could expose your master password. Only use this method in secure, controlled environments like automated scripts where the history is disabled. **Always wrap the password in quotes.**
+
+### Examples
+
+**1. Decrypt and Export to CSV (Recommended)**
+
+This command will decrypt the file and securely prompt for your password. It will create `my_data.csv` in the same directory.
 
 ```bash
-unsealer C:\backups\samsung.spass -f csv -o C:\MyExportedData
+# Provide the file path
+unsealer ./my_data.spass
+
+# The tool will then ask for your password securely.
 ```
-*这将在 `C:\MyExportedData` 目录下生成 `logins.csv`, `identities.csv` 等文件。*
 
-**4. 在终端中快速预览数据摘要**
+**2. Preview Data in the Terminal**
 
-如果您只想快速检查文件是否可被解密以及包含哪些数据，使用 `--preview` 标志。
+To quickly check if your password is correct and see what data is inside without creating a file.
 
 ```bash
-unsealer ./samsung.spass --preview
-# 程序会提示输入密码，然后显示如下摘要信息，但不会创建文件：
-# ✓ 解密成功
-# ✓ 登录凭证: 找到 125 条目
-# ✓ 身份信息: 找到 3 条目
-# ✓ 地址信息: 找到 8 条目
-# ...
+# The --preview flag shows a summary table in your terminal.
+unsealer C:\backups\samsung.spass --preview```
+
+**3. Export to Markdown with a Custom Filename**
+
+This is useful for creating readable reports.
+
+```bash
+unsealer ./my_data.spass -f md -o ./samsung-pass-report.md
 ```
----
-
-## 常见问题 (FAQ)
-
-**Q: 我收到了“解密失败”或“文件可能已损坏”的错误，怎么办？**
-A: 这通常意味着以下三种情况之一：
-   1.  **密码错误**: 您输入的三星账户主密码不正确。密码是大小写敏感的，请仔细检查。
-   2.  **文件损坏**: `.spass` 文件本身在备份过程中可能已损坏或不完整。请尝试使用 Smart Switch 创建一个全新的备份。
-   3.  **格式不兼容**: 三星可能在较新版本的 Smart Switch 或三星密码本中更新了加密或数据结构。由于本工具基于逆向工程，格式的变更可能会导致它无法读取新版文件，直到工具本身得到更新。
-
-**Q: 我遇到了“发生未知内部错误”，该怎么办？**
-A: 本工具设计了健壮的日志记录功能。当出现此提示时，请检查程序运行目录下是否生成了一个名为 `unsealer_error.log` 的文件。此文件包含了详细的技术错误信息，您可以在提交 Issue 时附上此文件的内容，以帮助开发者快速定位问题。
-
-**Q: 这个工具安全吗？它会偷我的密码吗？**
-A: 本工具将安全放在首位：
-   - 它 **100% 离线运行**。它不会也不能通过互联网发送您的任何数据。
-   - 它是 **开源** 的，任何人都可以审查源代码 (`decrypter.py`) 来验证它只执行本地解密操作。
-
-**Q: 这个工具能用于未来版本的三星密码本吗？**
-A: **不一定。** 本工具基于其开发时所采用的文件格式。如果三星在未来的更新中决定更改其加密方法，本工具可能会失效，直到社区对其进行更新。
 
 ---
 
-## 工作原理 (技术细节)
+## Troubleshooting (FAQ)
 
-对于技术细节感兴趣的用户，解密过程基于对 `.spass` 格式的逆向，遵循以下关键步骤：
+**Q: I get a "decryption or parsing failed" error. What should I do?**
+A: This is the most common issue and typically has one of these causes:
+   1.  **Incorrect Master Password**: This is the most frequent reason. Passwords are case-sensitive. Please verify it meticulously.
+   2.  **Corrupted Backup File**: The `.spass` file may have been corrupted during the backup process. Try creating a new, clean backup with Smart Switch.
+   3.  **Incompatible File Version**: Samsung may update their encryption format in newer versions of their software. This tool is based on the format known at the time of development and may require an update to support newer files.
 
-1.  **Base64 解码**: 整个 `.spass` 文件是一个 Base64 编码的字符串。第一步是将其解码为原始二进制数据。
-2.  **提取组件**: 二进制数据被分为三部分：一个 20 字节的 **盐 (salt)**，一个 16 字节的 **初始化向量 (IV)**，以及剩余的 **加密数据**。
-3.  **派生密钥**: 您的主密码并非直接的密钥。工具使用 **PBKDF2-HMAC-SHA256** 算法，将您的密码与盐结合，并执行 **70,000** 轮哈希运算，以派生出一个安全的 256 位 (32字节) AES 密钥。这使得对密码的暴力破解极为困难。
-4.  **AES 解密**: 使用派生出的密钥和 IV，通过 **AES-256-CBC** 模式对数据进行解密。
-5.  **解析数据**: 解密后的内容是一个巨大的、由分号分隔的文本块。工具会进一步解析这个块，识别出不同的数据表（如登录凭证、身份信息等），并对每个字段（它们本身也经过了 Base64 编码）进行最终解码，以提取出干净、结构化的数据。
+**Q: Is it safe to use this tool with my sensitive data?**
+A: Yes, it is designed to be safe.
+   - **It's 100% offline.** Your data is processed locally and is never sent over the network.
+   - **It's open source.** The complete code is available for public audit, allowing security experts and developers to verify its behavior.
+
+**Q: What kind of data does Unsealer export?**
+A: It attempts to parse and export all major data types stored in Samsung Pass, including website/app login credentials, saved identities (name, ID numbers), addresses, and secure notes.
 
 ---
 
-## 致谢
+## How It Works: A Technical Deep Dive
 
-本项目中核心的解密逻辑得以实现，离不开 **0xdeb7ef** 在 [**spass-manager**](https://github.com/0xdeb7ef/spass-manager) 项目中所做的杰出逆向工程工作。我们的 Python 实现是基于其发现和记录的逻辑的直接移植。我们由衷感谢他们对开源社区的贡献。
+The decryption process is a multi-step procedure based on the reverse-engineered `.spass` file format:
 
-## 许可证
+1.  **Base64 Decoding**: The `.spass` file is a text file containing a single Base64-encoded string. The first step is to decode this string into its raw binary representation.
+2.  **Component Extraction**: The resulting binary data is partitioned into three critical pieces:
+    *   A **20-byte Salt**: A random value used to strengthen the key derivation.
+    *   A **16-byte Initialization Vector (IV)**: Used to ensure unique encryption for identical blocks of data.
+    *   The **Encrypted Data**: The remaining ciphertext.
+3.  **Key Derivation (PBKDF2)**: Your master password is not used directly as the encryption key. Instead, it's fed into the **PBKDF2-HMAC-SHA256** algorithm. This function combines your password with the salt and performs **70,000 rounds** of hashing to produce a robust 256-bit (32-byte) AES key. This makes brute-force attacks computationally expensive and unfeasible.
+4.  **AES Decryption**: With the derived key and the IV, the tool uses the **AES-256-CBC** cipher to decrypt the ciphertext, revealing the original data in a semi-structured text format.
+5.  **Data Parsing**: The decrypted content is a large, delimited text block. Unsealer meticulously parses this block, identifies the different data tables (logins, identities, etc.), and decodes each field (which are themselves often Base64-encoded) to produce clean, structured data for export.
 
-本项目采用 **MIT 许可证**。详情请见 [LICENSE](LICENSE) 文件。
+## Acknowledgements
+
+The core decryption algorithm was made possible by the pioneering reverse engineering work from **0xdeb7ef** on the [**spass-manager**](https://github.com/0xdeb7ef/spass-manager) project. This tool is a Python implementation based on those foundational discoveries.
+
+## License
+
+This project is licensed under the **MIT License**. See the `LICENSE` file for full details.
