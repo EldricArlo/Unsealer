@@ -140,7 +140,8 @@ To quickly check if your password is correct and see what data is inside without
 
 ```bash
 # The --preview flag shows a summary table in your terminal.
-unsealer C:\backups\samsung.spass --preview```
+unsealer C:\backups\samsung.spass --preview
+```
 
 **3. Export to Markdown with a Custom Filename**
 
